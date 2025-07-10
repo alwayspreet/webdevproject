@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>E-Commerce Product Listing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .filters input, .filters select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .product {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .product img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .product h3 {
+      margin: 10px 0 5px;
+      font-size: 18px;
+    }
+
+    .product p {
+      margin: 4px 0;
+      color: #555;
+    }
+
+    .popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .popup h2 {
+      margin-top: 0;
+    }
+
+    .close-btn {
+      float: right;
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 600px) {
+      .filters {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛍️ Product Catalog</h1>
+
+  <div class="filters">
+    <input type="text" id="search" placeholder="Search..." oninput="filterProducts()" />
+    <select id="categoryFilter" onchange="filterProducts()">
+      <option value="">All Categories</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Books">Books</option>
+    </select>
+    <select id="priceFilter" onchange="filterProducts()">
+      <option value="">All Prices</option>
+      <option value="low">Under ₹500</option>
+      <option value="mid">₹500 - ₹1000</option>
+      <option value="high">Above ₹1000</option>
+    </select>
+    <select id="ratingFilter" onchange="filterProducts()">
+      <option value="">All Ratings</option>
+      <option value="4">4★ & up</option>
+      <option value="3">3★ & up</option>
+    </select>
+  </div>
+
+  <div class="grid" id="productGrid"></div>
+
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <button class="close-btn" onclick="closePopup()">X</button>
+      <h2 id="popupTitle"></h2>
+      <img id="popupImage" src="" style="width: 100%; border-radius: 5px;" />
+      <p id="popupPrice"></p>
+      <p id="popupRating"></p>
+      <p id="popupCategory"></p>
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      {
+        name: "Bluetooth Headphones",
+        category: "Electronics",
+        price: 799,
+        rating: 4.5,
+        image: "https://via.placeholder.com/220x180.png?text=Headphones"
+      },
+      {
+        name: "Cotton T-Shirt",
+        category: "Clothing",
+        price: 299,
+        rating: 4.0,
+        image: "https://via.placeholder.com/220x180.png?text=T-Shirt"
+      },
+      {
+        name: "JavaScript Book",
+        category: "Books",
+        price: 649,
+        rating: 3.8,
+        image: "https://via.placeholder.com/220x180.png?text=JS+Book"
+      },
+      {
+        name: "Wireless Mouse",
+        category: "Electronics",
+        price: 499,
+        rating: 4.2,
+        image: "https://via.placeholder.com/220x180.png?text=Mouse"
+      },
+      {
+        name: "Denim Jeans",
+        category: "Clothing",
+        price: 1199,
+        rating: 4.3,
+        image: "https://via.placeholder.com/220x180.png?text=Jeans"
+      }
+    ];
+
+    function renderProducts(productList) {
+      const grid = document.getElementById("productGrid");
+      grid.innerHTML = "";
+      productList.forEach((product, index) => {
+        grid.innerHTML += `
+          <div class="product" onclick="showPopup(${index})">
+            <img src="${product.image}" alt="${product.name}" />
+            <h3>${product.name}</h3>
+            <p>₹${product.price}</p>
+            <p>⭐ ${product.rating}</p>
+            <p>${product.category}</p>
+          </div>
+        `;
+      });
+    }
+
+    function filterProducts() {
+      const search = document.getElementById("search").value.toLowerCase();
+      const category = document.getElementById("categoryFilter").value;
+      const price = document.getElementById("priceFilter").value;
+      const rating = parseFloat(document.getElementById("ratingFilter").value) || 0;
+
+      const filtered = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(search);
+        const matchesCategory = !category || p.category === category;
+        const matchesRating = p.rating >= rating;
+
+        let matchesPrice = true;
+        if (price === "low") matchesPrice = p.price < 500;
+        else if (price === "mid") matchesPrice = p.price >= 500 && p.price <= 1000;
+        else if (price === "high") matchesPrice = p.price > 1000;
+
+        return matchesSearch && matchesCategory && matchesPrice && matchesRating;
+      });
+
+      renderProducts(filtered);
+    }
+
+    function showPopup(index) {
+      const product = products[index];
+      document.getElementById("popupTitle").innerText = product.name;
+      document.getElementById("popupImage").src = product.image;
+      document.getElementById("popupPrice").innerText = "Price: ₹" + product.price;
+      document.getElementById("popupRating").innerText = "Rating: ⭐ " + product.rating;
+      document.getElementById("popupCategory").innerText = "Category: " + product.category;
+      document.getElementById("popup").style.display = "flex";
+    }
+
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+    }
+
+    // Initialize
+    renderProducts(products);
+  </script>
+
+</body>
+</html>
